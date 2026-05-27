@@ -1,243 +1,305 @@
-# 🩺 Medipick
-의료·의약 문서 기반 RAG 질의응답 시스템
+# 💊 MediPill AI
+
+<div align="center">
+
+### Public Medical Data 기반 의료 RAG 질의응답 시스템
+
+의약품 공공데이터와 LLM 기반 Retrieval-Augmented Generation(RAG)을 결합하여  
+신뢰 가능한 의료 정보를 제공하는 Explainable Medical AI Project
+
+</div>
 
 ---
 
-# 📌 프로젝트 소개
+# Introduction
 
-Medipick은 의료·의약 문서를 기반으로 사용자의 질문에 신뢰성 있는 답변을 제공하는 RAG(Retrieval-Augmented Generation) 기반 AI 시스템입니다.
+MediPill AI는 식품의약품안전처 및 공공 의약품 데이터를 기반으로 구축한  
+의료·의약 특화 RAG(Retrieval-Augmented Generation) 질의응답 시스템입니다.
 
-단순 생성형 AI 응답이 아닌,
-실제 의료 문서를 검색한 뒤 해당 내용을 기반으로 답변을 생성하여 의료 AI의 환각(Hallucination)을 줄이고 신뢰성을 높이는 것을 목표로 합니다.
+기존 생성형 AI는 의료 분야에서 다음과 같은 문제를 가질 수 있습니다.
 
----
+- Hallucination(허위 정보 생성)
+- 출처 없는 답변
+- 최신 의료 데이터 반영 한계
+- 설명 가능성 부족(Explainability)
 
-# 🎯 프로젝트 목표
+MediPill AI는 이러한 문제를 해결하기 위해:
 
-- 의료·의약 정보의 신뢰성 향상
-- 문서 기반 의료 질의응답 시스템 구축
-- 출처 기반 응답 제공
-- 의료 AI 환각(Hallucination) 감소
-- RAG 구조 이해 및 구현
+1. 실제 공공 의약품 데이터를 검색(Retrieval)
+2. 검색 결과를 기반으로 Context 구성
+3. LLM이 근거 기반 응답 생성
 
----
-
-# ✨ 주요 기능
-
-## 1️⃣ 의료·의약 질의응답
-
-사용자의 자연어 질문에 대해 관련 의료 문서를 검색한 후 답변 생성
-
-### 예시
-- "고혈압 증상 알려줘"
-- "당뇨 관리 방법 알려줘"
-- "감기약 공복 복용 가능한가요?"
+구조를 적용하여 의료 AI의 신뢰성을 향상시키는 것을 목표로 합니다.
 
 ---
 
-## 2️⃣ 의약품 정보 검색
+#  Project Objectives
 
-의약품 설명서를 기반으로:
-
-- 효능
-- 복용 방법
-- 부작용
-- 주의사항
-
-등의 정보를 제공
-
----
-
-## 3️⃣ 응급처치 가이드
-
-응급 상황 발생 시 단계별 응급처치 방법 제공
-
-### 예시
-- 심폐소생술(CPR)
-- 화상 응급처치
-- 출혈 응급처치
+- 의료 분야 Hallucination 최소화
+- 공공 의약품 데이터 기반 QA 시스템 구축
+- Retrieval 기반 Explainable AI 구현
+- Vector Database 기반 검색 최적화
+- 의료 특화 RAG Pipeline 설계 및 구현
+- 사용자 친화적 의약품 정보 제공
+- OCR 기반 약품 인식 기능 확장 가능성 확보
 
 ---
 
-## 4️⃣ 출처 기반 응답 제공
+# Core Features
 
-답변 생성 시 참고한 문서와 출처를 함께 제공
+## 1. Medical RAG Question Answering
+
+사용자의 자연어 질문을 분석한 후 관련 의약품 문서를 검색하고, 검색된 데이터를 기반으로 답변을 생성합니다.
+
+### Example Queries
+
+```text
+- 타이레놀 복용 시 주의사항 알려줘
+- 어린이도 복용 가능한가요?
+- 공복 복용 가능한 약인가요?
+- 대표적인 부작용은 무엇인가요?
+- 동일 성분 의약품도 존재하나요?
+```
+
+---
+
+## 2. Retrieval-Based Response Generation
+
+LLM이 직접 답변을 생성하는 것이 아니라,  
+검색된 의약품 문서를 기반으로 응답을 생성합니다.
 
 ### 제공 정보
-- 문서명
-- 기관명
-- 참고 문장
+
+- 제품명
+- 제조사
+- 품목기준코드
+- 주요 성분
+- 효능 및 효과
+- 용법 및 용량
+- 복용 시 주의사항
+- 부작용 정보
+- 약물 상호작용
+- 보관 방법
 
 ---
 
-## 5️⃣ 의료 문서 요약
+## 3. Explainable AI Response
 
-긴 의료 문서를 핵심 내용 중심으로 요약 제공
+생성된 답변과 함께 실제 참고한 데이터 출처를 제공합니다.
+
+### Included Metadata
+
+- 의약품명
+- 업체명
+- 품목기준코드
+- 검색 문서 일부
+- 공공데이터 출처
+- Retrieval Context
+
+이를 통해 사용자는 답변의 신뢰성과 근거를 직접 검증할 수 있습니다.
 
 ---
 
-# 🏗️ 시스템 아키텍처
+## 4. Medical Information Summarization
+
+긴 의약품 설명서를 사용자가 이해하기 쉬운 형태로 요약합니다.
+
+### Summary Examples
+
+- 핵심 복용법 요약
+- 주요 부작용 요약
+- 복용 금기사항 요약
+- 고령자/어린이 복용 주의사항 요약
+
+---
+
+## 5. OCR-Based Future Expansion
+
+향후 OCR 및 Computer Vision 기술을 활용하여:
+
+- 알약 이미지 인식
+- 약 봉투 OCR
+- 약품 코드 추출
+- 자동 의약품 검색
+
+기능으로 확장 가능한 구조를 고려하고 있습니다.
+
+---
+
+#  System Architecture
 
 ```text
-의료 문서 수집
-        ↓
-PDF/Text 전처리
-        ↓
-Chunking
-        ↓
-Embedding 생성
-        ↓
-Vector DB 저장 (ChromaDB)
-━━━━━━━━━━━━━━━━━━
-사용자 질문 입력
-        ↓
-질문 유형 분석
-        ↓
-Retriever 검색
-        ↓
-LLM 답변 생성
-        ↓
-출처 기반 응답 제공
+┌─────────────────────────────┐
+│ Public Medical Data Sources │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Data Cleaning & Preprocess  │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Document Chunking           │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Embedding Generation        │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Vector Database (FAISS)     │
+└──────────────┬──────────────┘
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+               ↓
+┌─────────────────────────────┐
+│ User Question Input         │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Query Embedding             │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Similar Document Retrieval  │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Context Construction        │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ LLM Response Generation     │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Answer + Source Evidence    │
+└─────────────────────────────┘
 ```
 
 ---
 
-# ⚙️ 기술 스택
+# ⚙ Tech Stack
 
-## AI / RAG
+## AI / NLP
+
+- Python
 - LangChain
 - OpenAI API
-- OpenAI Embedding Model
+- HuggingFace Transformers
+- Sentence Transformers
+
+---
 
 ## Vector Database
+
+- FAISS
 - ChromaDB
 
+---
+
+## Backend
+
+- FastAPI
+- Flask
+
+---
+
 ## Frontend
+
 - Streamlit
 
-## Language
-- Python
+---
+
+## Data Processing
+
+- Pandas
+- NumPy
+- Regex
+- BeautifulSoup
 
 ---
 
-# 📂 프로젝트 구조
+## OCR / Vision (Planned)
+
+- EasyOCR
+- OpenCV
+- YOLO
+
+---
+
+# Dataset & Data Sources
+
+## Public Medical Data
+
+- 식품의약품안전처 의약품 API
+- 의약품안전나라
+- 공공데이터포털
+- 보건의료 빅데이터 개방 시스템
+
+---
+
+#  RAG Pipeline
 
 ```text
-SKN28-3rd-3TEAM/
-│
-├── data/
-│   ├── raw/                # 원본 의료 문서
-│   └── processed/          # 전처리된 문서
-│
-├── vector_db/              # ChromaDB 저장 공간
-│
-├── app.py                  # Streamlit UI
-├── ingest.py               # 문서 임베딩 및 DB 저장
-├── rag.py                  # Retrieval + Generation
-│
-├── requirements.txt
-├── .env
-├── .gitignore
-└── README.md
+User Query
+    ↓
+Query Embedding
+    ↓
+Vector Similarity Search
+    ↓
+Relevant Medical Document Retrieval
+    ↓
+Context Injection
+    ↓
+LLM Answer Generation
+    ↓
+Grounded Response with Evidence
 ```
 
 ---
 
-# 🚀 실행 방법
+# Future Work
 
-## 1️⃣ 저장소 Clone
-
-```bash
-git clone https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN28-3rd-3TEAM.git
-cd SKN28-3rd-3TEAM
-```
-
----
-
-## 2️⃣ 가상환경 생성
-
-```bash
-python -m venv venv
-```
+- OCR 기반 알약 검색 기능
+- 음성 기반 의료 질의응답
+- 약물 상호작용 자동 탐지
+- 복약 관리 기능
+- 모바일 앱 서비스화
+- 다국어 의료 질의응답 지원
 
 ---
 
-## 3️⃣ 가상환경 실행
+# Expected Impact
 
-### Windows
+MediPill AI는 단순 챗봇이 아닌,  
+공공 의료 데이터를 기반으로 신뢰 가능한 정보를 제공하는  
+Explainable Medical AI System을 목표로 합니다.
 
-```bash
-venv\Scripts\activate
-```
+이를 통해:
 
----
-
-## 4️⃣ 라이브러리 설치
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 5️⃣ OpenAI API Key 설정
-
-`.env`
-
-```env
-OPENAI_API_KEY=your_api_key
-```
-
----
-
-## 6️⃣ 문서 임베딩 실행
-
-```bash
-python ingest.py
-```
-
----
-
-## 7️⃣ Streamlit 실행
-
-```bash
-streamlit run app.py
-```
-
----
-
-# 📌 향후 개발 예정 기능
-
-- 질문 유형 자동 분류
-- 병용 금기 약물 안내
-- 음성 기반 질의응답
-- 의료 문서 자동 요약 고도화
-- 사용자 맞춤 건강 정보 제공
-
----
-
-# 👥 팀원 역할
-
-| 이름 | 역할 |
-|---|---|
-| 김민욱 | RAG / LLM 개발 |
-| 김주영 | 데이터 전처리 |
-| 김소윤| UI / Streamlit |
-| 심윤성| 발표 및 기획 |
-
----
-
-# ⚠️ 주의사항
-
-본 시스템은 의료 진단 목적이 아닌 정보 제공 시스템입니다.
-
-정확한 진단 및 치료는 반드시 전문 의료진과 상담해야 합니다.
-
----
-
-# 📖 기대 효과
-
+- 의료 AI의 신뢰성 향상
+- Hallucination 감소
 - 의료 정보 접근성 향상
-- 신뢰 기반 의료 AI 서비스 구현
-- RAG 구조 학습 및 실전 적용
-- 생성형 AI의 의료 분야 활용 가능성 검증
+- 공공데이터 활용 사례 확대
+
+를 기대할 수 있습니다.
+
+---
+
+#  Team
+
+| Role | Description |
+|---|---|
+| Data Engineering | 의료 데이터 수집 및 전처리 |
+| RAG Pipeline | 문서 검색 및 임베딩 구축 |
+| LLM Engineering | 질의응답 모델 구성 |
+| Backend | API 및 서버 개발 |
+| Frontend | 사용자 인터페이스 구현 |
+| OCR Research | 이미지 기반 약품 인식 연구 |
+
+---
+
+#  License
+
+This project is intended for academic and educational purposes.
+
+Medical information provided by this system should not be considered as professional medical advice.
