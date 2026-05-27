@@ -2,304 +2,450 @@
 
 <div align="center">
 
-### Public Medical Data 기반 의료 RAG 질의응답 시스템
+### Explainable Medical RAG System with Pill Image Recognition
 
-의약품 공공데이터와 LLM 기반 Retrieval-Augmented Generation(RAG)을 결합하여  
-신뢰 가능한 의료 정보를 제공하는 Explainable Medical AI Project
+공식 의약품 데이터와 Vision AI 기반의  
+멀티모달 의료 질의응답 시스템
 
 </div>
 
 ---
 
-# Introduction
+#  Introduction
 
-MediPill AI는 식품의약품안전처 및 공공 의약품 데이터를 기반으로 구축한  
-의료·의약 특화 RAG(Retrieval-Augmented Generation) 질의응답 시스템입니다.
+MediPill AI는 의료·의약 분야에서 발생할 수 있는 생성형 AI의 Hallucination 문제를 줄이기 위해 개발된 Explainable Medical RAG System입니다.
 
-기존 생성형 AI는 의료 분야에서 다음과 같은 문제를 가질 수 있습니다.
+본 시스템은:
 
-- Hallucination(허위 정보 생성)
-- 출처 없는 답변
-- 최신 의료 데이터 반영 한계
-- 설명 가능성 부족(Explainability)
+- 공식 의약품 문서 기반 Retrieval
+- LLM 기반 질의응답
+- Vision 기반 알약 이미지 인식
+- RxNav / DailyMed 기반 의약품 정보 연동
 
-MediPill AI는 이러한 문제를 해결하기 위해:
-
-1. 실제 공공 의약품 데이터를 검색(Retrieval)
-2. 검색 결과를 기반으로 Context 구성
-3. LLM이 근거 기반 응답 생성
-
-구조를 적용하여 의료 AI의 신뢰성을 향상시키는 것을 목표로 합니다.
+구조를 결합하여 신뢰 가능한 의료 정보를 제공하는 것을 목표로 합니다.
 
 ---
 
-#  Project Objectives
+#  Problem Statement
+
+기존 생성형 AI는 의료 분야에서 다음과 같은 한계를 가질 수 있습니다.
+
+- 허위 정보 생성(Hallucination)
+- 출처 없는 답변
+- 최신 의약품 정보 반영 한계
+- 설명 가능성 부족(Explainability)
+- 이미지 기반 의약품 식별 불가
+
+MediPill AI는 공식 의료 데이터와 Retrieval 기반 구조를 통해 이러한 문제를 해결하고자 합니다.
+
+---
+
+# Project Objectives
 
 - 의료 분야 Hallucination 최소화
-- 공공 의약품 데이터 기반 QA 시스템 구축
+- 공식 의약품 문서 기반 QA 시스템 구축
 - Retrieval 기반 Explainable AI 구현
-- Vector Database 기반 검색 최적화
-- 의료 특화 RAG Pipeline 설계 및 구현
-- 사용자 친화적 의약품 정보 제공
-- OCR 기반 약품 인식 기능 확장 가능성 확보
+- DailyMed 기반 의료 문서 RAG 구축
+- Vision 기반 알약 인식 기능 구현
+- RxNav 기반 실제 의약품명 매핑
+- 이미지 기반 의료 질의응답 확장
 
 ---
 
-# Core Features
+#  Core Features
 
-## 1. Medical RAG Question Answering
+# 1. Medical RAG Question Answering
 
-사용자의 자연어 질문을 분석한 후 관련 의약품 문서를 검색하고, 검색된 데이터를 기반으로 답변을 생성합니다.
+사용자의 자연어 질문을 분석하여 관련 의약품 문서를 검색하고, 검색된 의료 문서를 기반으로 답변을 생성합니다.
 
-### Example Queries
+## Example Queries
 
 ```text
-- 타이레놀 복용 시 주의사항 알려줘
+- 타이레놀 밥 먹기 전에 먹어도 돼?
 - 어린이도 복용 가능한가요?
-- 공복 복용 가능한 약인가요?
 - 대표적인 부작용은 무엇인가요?
-- 동일 성분 의약품도 존재하나요?
+- 공복 복용 가능한 약인가요?
+- 약물 상호작용이 있나요?
 ```
 
 ---
 
-## 2. Retrieval-Based Response Generation
+# 2. DailyMed-Based Retrieval
 
-LLM이 직접 답변을 생성하는 것이 아니라,  
-검색된 의약품 문서를 기반으로 응답을 생성합니다.
+FDA/NLM 공식 의약품 라벨 데이터베이스인 DailyMed를 기반으로 Retrieval을 수행합니다.
 
-### 제공 정보
+## Retrieved Information
 
-- 제품명
-- 제조사
-- 품목기준코드
-- 주요 성분
 - 효능 및 효과
 - 용법 및 용량
-- 복용 시 주의사항
-- 부작용 정보
+- 경고 및 주의사항
+- 금기사항
+- 부작용
 - 약물 상호작용
 - 보관 방법
 
 ---
 
-## 3. Explainable AI Response
+# 3. Explainable Medical AI
 
-생성된 답변과 함께 실제 참고한 데이터 출처를 제공합니다.
+LLM이 직접 답변을 생성하는 것이 아니라, 검색된 의료 문서를 기반으로 응답을 생성합니다.
 
-### Included Metadata
+## Included Evidence
 
-- 의약품명
-- 업체명
-- 품목기준코드
-- 검색 문서 일부
-- 공공데이터 출처
+- DailyMed SPL 문서
 - Retrieval Context
+- 의약품명
+- 성분명
+- 섹션 정보
+- 검색 근거 문서
 
-이를 통해 사용자는 답변의 신뢰성과 근거를 직접 검증할 수 있습니다.
-
----
-
-## 4. Medical Information Summarization
-
-긴 의약품 설명서를 사용자가 이해하기 쉬운 형태로 요약합니다.
-
-### Summary Examples
-
-- 핵심 복용법 요약
-- 주요 부작용 요약
-- 복용 금기사항 요약
-- 고령자/어린이 복용 주의사항 요약
+이를 통해 사용자는 AI 응답의 근거를 직접 확인할 수 있습니다.
 
 ---
 
-## 5. OCR-Based Future Expansion
+# 4. Pill Image Recognition (Vision AI)
 
-향후 OCR 및 Computer Vision 기술을 활용하여:
+사용자가 알약 이미지를 업로드하면 Vision AI 모델이 알약을 분류하고 실제 의약품 정보를 추정합니다.
 
-- 알약 이미지 인식
-- 약 봉투 OCR
-- 약품 코드 추출
-- 자동 의약품 검색
-
-기능으로 확장 가능한 구조를 고려하고 있습니다.
-
----
-
-#  System Architecture
+## Vision Pipeline
 
 ```text
-┌─────────────────────────────┐
-│ Public Medical Data Sources │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Data Cleaning & Preprocess  │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Document Chunking           │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Embedding Generation        │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Vector Database (FAISS)     │
-└──────────────┬──────────────┘
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               ↓
-┌─────────────────────────────┐
-│ User Question Input         │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Query Embedding             │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Similar Document Retrieval  │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Context Construction        │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ LLM Response Generation     │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Answer + Source Evidence    │
-└─────────────────────────────┘
+Pill Image
+    ↓
+YOLOv8 Classification
+    ↓
+Pill Label Prediction
+    ↓
+NDC Code Extraction
+    ↓
+RxNav Drug Mapping
+    ↓
+DailyMed Retrieval
+    ↓
+Medical RAG Response
 ```
 
 ---
 
-# ⚙ Tech Stack
+# 5. RxNav Drug Mapping
 
-## AI / NLP
+YOLO 모델의 예측 label에서 NDC 코드를 추출한 뒤 RxNav API를 이용하여 실제 의약품명과 매핑합니다.
 
-- Python
-- LangChain
-- OpenAI API
-- HuggingFace Transformers
-- Sentence Transformers
+## Example
+
+```text
+Prediction Label:
+00093-0148-01_4629A34D
+
+↓
+
+Mapped Drug:
+Fluoxetine 10 MG Oral Tablet
+```
 
 ---
 
-## Vector Database
+# 6. DailyMed Medical Document Collection
+
+RxNav로 매핑된 의약품명을 기반으로 DailyMed SPL 문서를 수집합니다.
+
+## DailyMed Information
+
+- SPL XML
+- 약품 라벨 문서
+- FDA 등록 의약품 정보
+- Structured Product Labeling
+
+---
+
+# 7. Medical Document Chunking
+
+수집한 SPL XML 문서를 섹션 단위로 분할하고 RAG 검색에 적합한 형태로 Chunking합니다.
+
+## Example Sections
+
+- INDICATIONS AND USAGE
+- DOSAGE AND ADMINISTRATION
+- WARNINGS
+- ADVERSE REACTIONS
+- DRUG INTERACTIONS
+
+---
+
+# 8. Vector Database Retrieval
+
+Chunking된 의료 문서를 Embedding하여 Vector Database에 저장합니다.
+
+## Supported Vector DB
 
 - FAISS
 - ChromaDB
 
 ---
 
-## Backend
+#  System Architecture
+
+```text
+                         ┌────────────────────┐
+                         │ DailyMed API       │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ SPL XML Collection │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ XML Parsing        │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Chunking           │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Embedding          │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Vector DB (FAISS)  │
+                         └────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Pill Image
+    ↓
+YOLOv8 Classification
+    ↓
+Prediction Label
+    ↓
+NDC Extraction
+    ↓
+RxNav Drug Mapping
+    ↓
+Drug Name
+    ↓
+DailyMed Retrieval
+    ↓
+RAG QA Response
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+User Question
+    ↓
+Medical Document Retrieval
+    ↓
+Context Construction
+    ↓
+LLM Response Generation
+    ↓
+Grounded Medical Answer
+```
+
+---
+
+# ⚙ Tech Stack
+
+# AI / NLP
+
+- Python
+- LangChain
+- OpenAI API
+- HuggingFace
+- Sentence Transformers
+
+---
+
+# Vision AI
+
+- YOLOv8
+- OpenCV
+- Pillow
+
+---
+
+# Medical APIs
+
+- RxNav API
+- DailyMed API
+- openFDA API
+
+---
+
+# Vector Database
+
+- FAISS
+- ChromaDB
+
+---
+
+# Backend
 
 - FastAPI
 - Flask
 
 ---
 
-## Frontend
+# Frontend
 
 - Streamlit
 
 ---
 
-## Data Processing
+# Data Processing
 
 - Pandas
 - NumPy
-- Regex
 - BeautifulSoup
+- Regex
+- XML Parsing
 
 ---
 
-## OCR / Vision (Planned)
+# Dataset & Medical Sources
 
-- EasyOCR
-- OpenCV
-- YOLO
+# Medical Data Sources
 
----
+- DailyMed
+- RxNav
+- openFDA
+  
+  
 
-# Dataset & Data Sources
-
-## Public Medical Data
-
-- 식품의약품안전처 의약품 API
-- 의약품안전나라
-- 공공데이터포털
-- 보건의료 빅데이터 개방 시스템
 
 ---
 
-#  RAG Pipeline
+# Vision Dataset
+
+- ePillID Benchmark Dataset
+
+---
+
+# Vision AI Pipeline
+
+```text
+Pill Image
+    ↓
+YOLOv8 Classification
+    ↓
+Predicted Label
+    ↓
+NDC Code Extraction
+    ↓
+RxNav API Lookup
+    ↓
+Drug Name Mapping
+    ↓
+DailyMed Retrieval
+    ↓
+Medical QA Response
+```
+
+---
+
+# 🔎 RAG Pipeline
 
 ```text
 User Query
     ↓
-Query Embedding
-    ↓
-Vector Similarity Search
+Drug Name Detection
     ↓
 Relevant Medical Document Retrieval
     ↓
 Context Injection
     ↓
-LLM Answer Generation
+LLM Response Generation
     ↓
 Grounded Response with Evidence
 ```
 
 ---
 
-# Future Work
+# 📦 Project Structure
 
-- OCR 기반 알약 검색 기능
-- 음성 기반 의료 질의응답
-- 약물 상호작용 자동 탐지
-- 복약 관리 기능
-- 모바일 앱 서비스화
-- 다국어 의료 질의응답 지원
+```text
+MediPill-AI/
+│
+├── models/
+│   ├── yolo/
+│   └── embeddings/
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   ├── dailymed_xml/
+│   └── chunks/
+│
+├── vector_db/
+│   └── faiss/
+│
+├── scripts/
+│   ├── rxnav_mapping/
+│   ├── dailymed_collect/
+│   ├── xml_parser/
+│   └── vector_build/
+│
+├── app/
+│   ├── rag/
+│   ├── vision/
+│   ├── api/
+│   └── ui/
+│
+└── README.md
+```
 
 ---
 
-# Expected Impact
+# 🚀 Future Work
+
+- OCR 기반 약 봉투 인식
+- 실시간 카메라 기반 알약 탐지
+- 다국어 의료 질의응답
+- 복약 스케줄 관리
+- 음성 기반 의료 QA
+- 모바일 앱 서비스화
+- 한국 의약품 DB 확장
+- 약물 상호작용 자동 분석
+
+---
+
+#  Expected Impact
 
 MediPill AI는 단순 챗봇이 아닌,  
-공공 의료 데이터를 기반으로 신뢰 가능한 정보를 제공하는  
-Explainable Medical AI System을 목표로 합니다.
+공식 의료 문서를 기반으로 신뢰 가능한 정보를 제공하는 Explainable Medical AI System을 목표로 합니다.
 
 이를 통해:
 
-- 의료 AI의 신뢰성 향상
+- 의료 AI 신뢰성 향상
 - Hallucination 감소
 - 의료 정보 접근성 향상
-- 공공데이터 활용 사례 확대
+- Vision 기반 의료 QA 확장
+- 공공 의료 데이터 활용 사례 확대
 
 를 기대할 수 있습니다.
 
 ---
 
-#  Team
+#  We are the One
 
 | Role | Description |
 |---|---|
-| Data Engineering | 의료 데이터 수집 및 전처리 |
-| RAG Pipeline | 문서 검색 및 임베딩 구축 |
-| LLM Engineering | 질의응답 모델 구성 |
-| Backend | API 및 서버 개발 |
-| Frontend | 사용자 인터페이스 구현 |
-| OCR Research | 이미지 기반 약품 인식 연구 |
+| Vision AI | YOLO 기반 알약 이미지 인식 | - 김소윤
+| RAG Engineering | Retrieval 및 QA Pipeline | - 김민욱
+| Data Engineering | 의료 문서 수집 및 전처리 | -심윤성
+| Backend | API 및 서버 개발 | -김민욱
+| Frontend | 사용자 인터페이스 개발 | -김주영
+| Medical AI Research | 의료 문서 기반 AI 연구 | - 김민욱,김소윤,김주영,심윤성
 
 ---
 
-#  License
+# ⚠ Disclaimer
 
-This project is intended for academic and educational purposes.
+This project is intended for academic and educational purposes only.
 
-Medical information provided by this system should not be considered as professional medical advice.
+The medical information generated by this system should not be considered professional medical advice.
+
+Always consult licensed medical professionals before taking any medication.
