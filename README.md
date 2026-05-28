@@ -1,47 +1,60 @@
-# 💊 MediPill AI
+# MediPill AI
 
-<div align="center">
+## RAG-Based Multimodal Medical LLM System
 
-### Public Medical Data 기반 의료 RAG 질의응답 시스템
+MediPill AI는 공식 의료 문서를 기반으로 Retrieval-Augmented Generation(RAG)을 수행하는 멀티모달 의료 LLM 시스템입니다.
 
-의약품 공공데이터와 LLM 기반 Retrieval-Augmented Generation(RAG)을 결합하여  
-신뢰 가능한 의료 정보를 제공하는 Explainable Medical AI Project
+본 프로젝트는 생성형 AI의 Hallucination 문제를 줄이기 위해 DailyMed, RxNav 등 공식 의료 데이터를 기반으로 Retrieval 구조를 구성하였으며, Grounded Response 기반 의료 질의응답 시스템 구현을 목표로 합니다.
 
-</div>
+또한 텍스트 질의뿐 아니라 알약 이미지 기반 입력까지 지원하는 멀티모달 구조를 통해 의료 정보 접근성을 확장하고자 하였습니다.
 
 ---
 
 # Introduction
 
-MediPill AI는 식품의약품안전처 및 공공 의약품 데이터를 기반으로 구축한  
-의료·의약 특화 RAG(Retrieval-Augmented Generation) 질의응답 시스템입니다.
+기존 생성형 AI 기반 의료 QA 시스템은 다음과 같은 한계를 가질 수 있습니다.
 
-기존 생성형 AI는 의료 분야에서 다음과 같은 문제를 가질 수 있습니다.
+* 출처가 불명확한 답변 생성
+* 최신 의료 정보 반영 한계
+* Hallucination 발생 가능성
+* 설명 가능한 근거 부족
+* 이미지 기반 의료 질의 처리 한계
 
-- Hallucination(허위 정보 생성)
-- 출처 없는 답변
-- 최신 의료 데이터 반영 한계
-- 설명 가능성 부족(Explainability)
+의료 분야에서는 잘못된 정보 생성이 실제 사용자에게 위험할 수 있기 때문에, 단순 생성형 응답이 아닌 공식 문서를 기반으로 한 Grounded AI 구조가 중요합니다.
 
-MediPill AI는 이러한 문제를 해결하기 위해:
-
-1. 실제 공공 의약품 데이터를 검색(Retrieval)
-2. 검색 결과를 기반으로 Context 구성
-3. LLM이 근거 기반 응답 생성
-
-구조를 적용하여 의료 AI의 신뢰성을 향상시키는 것을 목표로 합니다.
+MediPill AI는 이러한 문제를 해결하기 위해 Retrieval-Augmented Generation(RAG) 기반 구조를 적용하였으며, 공식 의료 문서를 검색한 뒤 해당 Context를 기반으로 LLM 응답을 생성합니다.
 
 ---
 
-#  Project Objectives
+# Project Objectives
 
-- 의료 분야 Hallucination 최소화
-- 공공 의약품 데이터 기반 QA 시스템 구축
-- Retrieval 기반 Explainable AI 구현
-- Vector Database 기반 검색 최적화
-- 의료 특화 RAG Pipeline 설계 및 구현
-- 사용자 친화적 의약품 정보 제공
-- OCR 기반 약품 인식 기능 확장 가능성 확보
+* 의료 분야 Hallucination 최소화
+* 공식 의료 문서 기반 Grounded QA 구현
+* Explainable Medical AI 구조 설계
+* 의료 특화 RAG Pipeline 구축
+* Multimodal 기반 의료 질의응답 확장
+* Vision AI 기반 Drug Identification 연동
+* 공식 의료 데이터 기반 Retrieval 구조 구현
+
+---
+
+# Why RAG in Medical AI?
+
+의료 분야에서는 생성형 AI의 답변 정확성과 근거가 매우 중요합니다.
+
+기존 LLM은 학습 데이터에 의존하여 답변을 생성하기 때문에:
+
+* 최신 의약품 정보 반영이 어렵고
+* 허위 정보를 생성할 가능성이 있으며
+* 답변 근거를 명확히 설명하기 어렵습니다.
+
+MediPill AI는 Retrieval-Augmented Generation(RAG)을 통해:
+
+1. 공식 의료 문서를 검색하고
+2. 관련 Context를 추출한 뒤
+3. 해당 정보를 기반으로 LLM 응답을 생성합니다.
+
+이를 통해 단순 생성형 응답이 아닌 Grounded Medical Response를 제공합니다.
 
 ---
 
@@ -49,257 +62,275 @@ MediPill AI는 이러한 문제를 해결하기 위해:
 
 ## 1. Medical RAG Question Answering
 
-사용자의 자연어 질문을 분석한 후 관련 의약품 문서를 검색하고, 검색된 데이터를 기반으로 답변을 생성합니다.
+사용자의 의료 질문에 대해 관련 의약품 문서를 Retrieval하고, 검색된 Context 기반으로 답변을 생성합니다.
 
 ### Example Queries
 
-```text
-- 타이레놀 복용 시 주의사항 알려줘
-- 어린이도 복용 가능한가요?
-- 공복 복용 가능한 약인가요?
+```text id="n7u6qg"
+- 타이레놀 공복 복용 가능한가요?
 - 대표적인 부작용은 무엇인가요?
-- 동일 성분 의약품도 존재하나요?
+- 어린이도 복용 가능한 약인가요?
+- 약물 상호작용이 있나요?
 ```
 
 ---
 
-## 2. Retrieval-Based Response Generation
+## 2. Official Medical Document Retrieval
 
-LLM이 직접 답변을 생성하는 것이 아니라,  
-검색된 의약품 문서를 기반으로 응답을 생성합니다.
+FDA/NLM 공식 의료 데이터베이스를 기반으로 Retrieval을 수행합니다.
 
-### 제공 정보
+### Medical Sources
 
-- 제품명
-- 제조사
-- 품목기준코드
-- 주요 성분
-- 효능 및 효과
-- 용법 및 용량
-- 복용 시 주의사항
-- 부작용 정보
-- 약물 상호작용
-- 보관 방법
+* DailyMed
+* RxNav
+* openFDA
 
----
+### Retrieved Information
 
-## 3. Explainable AI Response
-
-생성된 답변과 함께 실제 참고한 데이터 출처를 제공합니다.
-
-### Included Metadata
-
-- 의약품명
-- 업체명
-- 품목기준코드
-- 검색 문서 일부
-- 공공데이터 출처
-- Retrieval Context
-
-이를 통해 사용자는 답변의 신뢰성과 근거를 직접 검증할 수 있습니다.
+* 효능 및 효과
+* 용법 및 용량
+* 금기사항
+* 부작용
+* 약물 상호작용
+* 경고 및 주의사항
 
 ---
 
-## 4. Medical Information Summarization
+## 3. Grounded Medical Response
 
-긴 의약품 설명서를 사용자가 이해하기 쉬운 형태로 요약합니다.
+LLM이 직접 답변을 생성하는 것이 아니라, Retrieval된 의료 문서를 기반으로 응답을 생성합니다.
 
-### Summary Examples
+### Included Evidence
 
-- 핵심 복용법 요약
-- 주요 부작용 요약
-- 복용 금기사항 요약
-- 고령자/어린이 복용 주의사항 요약
+* DailyMed SPL 문서
+* Retrieval Context
+* 의약품명 및 성분명
+* 검색 근거 문서
+* 문서 섹션 정보
 
----
-
-## 5. OCR-Based Future Expansion
-
-향후 OCR 및 Computer Vision 기술을 활용하여:
-
-- 알약 이미지 인식
-- 약 봉투 OCR
-- 약품 코드 추출
-- 자동 의약품 검색
-
-기능으로 확장 가능한 구조를 고려하고 있습니다.
+이를 통해 사용자는 AI 응답의 근거를 직접 확인할 수 있습니다.
 
 ---
 
-#  System Architecture
+## 4. Multimodal Drug Identification
 
-```text
-┌─────────────────────────────┐
-│ Public Medical Data Sources │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Data Cleaning & Preprocess  │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Document Chunking           │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Embedding Generation        │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Vector Database (FAISS)     │
-└──────────────┬──────────────┘
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               ↓
-┌─────────────────────────────┐
-│ User Question Input         │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Query Embedding             │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Similar Document Retrieval  │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Context Construction        │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ LLM Response Generation     │
-└──────────────┬──────────────┘
-               ↓
-┌─────────────────────────────┐
-│ Answer + Source Evidence    │
-└─────────────────────────────┘
+사용자는 텍스트뿐 아니라 알약 이미지를 통해서도 의료 질의를 수행할 수 있습니다.
+
+Vision AI 기반 알약 식별 결과는 Retrieval을 수행하기 위한 입력 정보로 활용됩니다.
+
+### Multimodal Flow
+
+```text id="g9q4wg"
+Pill Image
+    ↓
+Vision AI / OCR
+    ↓
+Drug Identification
+    ↓
+Medical Document Retrieval
+    ↓
+Context Injection
+    ↓
+LLM Response
 ```
 
 ---
 
-# ⚙ Tech Stack
+## 5. Medical Document Chunking
 
-## AI / NLP
+수집한 의료 문서를 섹션 단위로 분할하여 RAG 검색에 적합한 형태로 Chunking합니다.
 
-- Python
-- LangChain
-- OpenAI API
-- HuggingFace Transformers
-- Sentence Transformers
+### Example Sections
+
+* INDICATIONS AND USAGE
+* DOSAGE AND ADMINISTRATION
+* WARNINGS
+* ADVERSE REACTIONS
+* DRUG INTERACTIONS
+
+---
+
+## 6. Vector Database Retrieval
+
+Chunking된 의료 문서를 Embedding하여 Vector Database에 저장하고 의미 기반 검색을 수행합니다.
+
+### Supported Vector Databases
+
+* FAISS
+* ChromaDB
+
+---
+
+# RAG Pipeline
+
+```text id="a48u1l"
+User Query
+    ↓
+Drug Name Detection
+    ↓
+Medical Document Retrieval
+    ↓
+Relevant Context Extraction
+    ↓
+LLM Context Injection
+    ↓
+Grounded Medical Response
+```
+
+---
+
+# System Architecture
+
+```text id="pkfzt4"
+                         ┌────────────────────┐
+                         │ DailyMed API       │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ SPL XML Collection │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ XML Parsing        │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Chunking           │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Embedding          │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Vector DB          │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ Retrieval          │
+                         └─────────┬──────────┘
+                                   │
+                         ┌─────────▼──────────┐
+                         │ LLM Generation     │
+                         └────────────────────┘
+```
+
+---
+
+# User Scenario
+
+## Scenario 1. Text-Based Medical QA
+
+1. 사용자가 의료 질문을 입력한다.
+2. 시스템이 약품명 및 핵심 키워드를 분석한다.
+3. 관련 의료 문서를 Retrieval한다.
+4. 검색된 Context 기반으로 LLM 응답을 생성한다.
+5. 사용자는 근거 기반 의료 정보를 확인한다.
+
+---
+
+## Scenario 2. Image-Based Medical QA
+
+1. 사용자가 알약 이미지를 업로드한다.
+2. Vision AI가 알약을 식별한다.
+3. 의약품 정보를 기반으로 의료 문서를 Retrieval한다.
+4. Retrieval된 Context를 기반으로 답변을 생성한다.
+5. 사용자는 관련 의료 정보를 확인한다.
+
+---
+
+# Tech Stack
+
+## LLM / RAG
+
+* LangChain
+* OpenAI API
+* Sentence Transformers
+* HuggingFace
+
+---
+
+## Vision AI
+
+* YOLOv8
+* OpenCV
+* Pillow
 
 ---
 
 ## Vector Database
 
-- FAISS
-- ChromaDB
+* FAISS
+* ChromaDB
 
 ---
 
 ## Backend
 
-- FastAPI
-- Flask
+* FastAPI
+* Flask
 
 ---
 
 ## Frontend
 
-- Streamlit
+* Streamlit
 
 ---
 
 ## Data Processing
 
-- Pandas
-- NumPy
-- Regex
-- BeautifulSoup
+* Pandas
+* NumPy
+* BeautifulSoup
+* XML Parsing
 
 ---
 
-## OCR / Vision (Planned)
+# Expected Outcomes
 
-- EasyOCR
-- OpenCV
-- YOLO
-
----
-
-# Dataset & Data Sources
-
-## Public Medical Data
-
-- 식품의약품안전처 의약품 API
-- 의약품안전나라
-- 공공데이터포털
-- 보건의료 빅데이터 개방 시스템
+* 의료 특화 RAG 구조 구현
+* Grounded LLM 기반 의료 QA 시스템 개발
+* Retrieval 기반 Explainable AI 검증
+* Multimodal Medical AI 구조 설계
+* 의료 데이터 기반 AI 서비스 확장 가능성 검증
 
 ---
 
-#  RAG Pipeline
+# Future Extensions
 
-```text
-User Query
-    ↓
-Query Embedding
-    ↓
-Vector Similarity Search
-    ↓
-Relevant Medical Document Retrieval
-    ↓
-Context Injection
-    ↓
-LLM Answer Generation
-    ↓
-Grounded Response with Evidence
-```
+* OCR 기반 약 봉투 인식
+* 실시간 카메라 기반 질의응답
+* 음성 기반 의료 QA
+* 한국 의약품 데이터 확장
+* 약물 상호작용 자동 분석
+* 모바일 기반 의료 서비스화
 
 ---
 
-# Future Work
+# Team Members
 
-- OCR 기반 알약 검색 기능
-- 음성 기반 의료 질의응답
-- 약물 상호작용 자동 탐지
-- 복약 관리 기능
-- 모바일 앱 서비스화
-- 다국어 의료 질의응답 지원
-
----
-
-# Expected Impact
-
-MediPill AI는 단순 챗봇이 아닌,  
-공공 의료 데이터를 기반으로 신뢰 가능한 정보를 제공하는  
-Explainable Medical AI System을 목표로 합니다.
-
-이를 통해:
-
-- 의료 AI의 신뢰성 향상
-- Hallucination 감소
-- 의료 정보 접근성 향상
-- 공공데이터 활용 사례 확대
-
-를 기대할 수 있습니다.
+| Name | Role                | Responsibility             |
+| ---- | ------------------- | -------------------------- |
+| 김소윤  | Vision AI Engineer  | 알약 이미지 인식 및 멀티모달 입력 구조 개발  |
+| 김민욱  | RAG Engineer        | Retrieval 및 QA Pipeline 구현 |
+| 심윤성  | Data Engineer       | 의료 문서 수집 및 전처리             |
+| 김주영  | Frontend Engineer   | 사용자 인터페이스 개발               |
+| Team | Medical AI Research | 의료 특화 RAG 시스템 설계 및 검증      |
 
 ---
 
-#  Team
+# References
 
-| Role | Description |
-|---|---|
-| Data Engineering | 의료 데이터 수집 및 전처리 |
-| RAG Pipeline | 문서 검색 및 임베딩 구축 |
-| LLM Engineering | 질의응답 모델 구성 |
-| Backend | API 및 서버 개발 |
-| Frontend | 사용자 인터페이스 구현 |
-| OCR Research | 이미지 기반 약품 인식 연구 |
+* Shape and Text Imprint Recognition of Pill Image Taken with a Smartphone
+  https://s-space.snu.ac.kr/handle/10371/137361
 
 ---
 
-#  License
+# Disclaimer
 
-This project is intended for academic and educational purposes.
+This project is intended for academic and educational purposes only.
 
-Medical information provided by this system should not be considered as professional medical advice.
+The medical information generated by this system should not be considered professional medical advice.
+
+Always consult licensed medical professionals before taking any medication.
