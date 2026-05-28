@@ -444,7 +444,7 @@ MediPill AI는 단순 챗봇이 아닌,
 ---
 
 # 참고 문헌 
-스마트폰으로 촬영된 알약 영상의 글자 및 형상 인식 방법 : Shape and Text Imprint Recognition of Pill Image Taken with a Smartphone
+스마트폰으로 촬영된 알약 영상의 글자 및 형상 인식 방법 : Shape and Text Imprint Recognition of Pill Image Taken with a Smartphone :https://s-space.snu.ac.kr/handle/10371/137361
 
 # ⚠ Disclaimer
 
