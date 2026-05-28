@@ -433,14 +433,18 @@ MediPill AI는 단순 챗봇이 아닌,
 
 | Role | Description |
 |---|---|
-| Vision AI | YOLO 기반 알약 이미지 인식 | - 김소윤
-| RAG Engineering | Retrieval 및 QA Pipeline | - 김민욱
-| Data Engineering | 의료 문서 수집 및 전처리 | -심윤성
-| Backend | API 및 서버 개발 | -김민욱
-| Frontend | 사용자 인터페이스 개발 | -김주영
-| Medical AI Research | 의료 문서 기반 AI 연구 | - 김민욱,김소윤,김주영,심윤성
+| Vision AI | YOLO 기반 알약 이미지 인식  - 김소윤 | 
+| RAG Engineering | Retrieval 및 QA Pipeline - 김민욱 |
+| Data Engineering | 의료 문서 수집 및 전처리 - 심윤성 |
+| Backend | API 및 서버 개발  - 김민욱|
+| Frontend | 사용자 인터페이스 개발 - 김주영|
+| Medical AI Research | 의료 문서 기반 AI 연구 - 김민욱,김소윤,김주영,심윤성| 
+
 
 ---
+
+# 참고 문헌 
+스마트폰으로 촬영된 알약 영상의 글자 및 형상 인식 방법 : Shape and Text Imprint Recognition of Pill Image Taken with a Smartphone
 
 # ⚠ Disclaimer
 
