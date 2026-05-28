@@ -22,14 +22,19 @@ def load_all_json_docs():
             items = json.load(f)
 
         for item in items:
+            item_metadata = item.get("metadata", {})
+
+            metadata = {
+                "title": item.get("title", ""),
+                "source": item.get("source", ""),
+                "url": item.get("url", ""),
+                **item_metadata
+            }
+
             docs.append(
                 Document(
-                    page_content=item["content"],
-                    metadata={
-                        "title": item.get("title", ""),
-                        "source": item.get("source", ""),
-                        "url": item.get("url", "")
-                    }
+                    page_content=item.get("content", ""),
+                    metadata=metadata
                 )
             )
 
@@ -39,7 +44,7 @@ def build_vector_db():
     documents = load_all_json_docs()
 
     if not documents:
-        raise ValueError("data/processed 폴더에 문서가 없습니다. 먼저 collect_openfda.py를 실행하세요.")
+        raise ValueError("data/processed 폴더에 문서가 없습니다. 먼저 collect_korea_drug.py를 실행하세요.")
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,

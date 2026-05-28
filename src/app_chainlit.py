@@ -1,57 +1,99 @@
-# src/app_chainlit.py
-
+import asyncio
 import chainlit as cl
 from rag_chain import load_rag
 
-@cl.on_chat_start
-async def on_chat_start():
-    ask = load_rag()
-    cl.user_session.set("ask", ask)
 
-    await cl.Message(
-        content="""
+WELCOME_MESSAGE = """
 # 💊 MediPick
 
-의료·의약 문서 기반 RAG 질의응답 시스템입니다.
+의약품 문서 기반 RAG 질의응답 시스템입니다.
 
 예시 질문:
 - 타이레놀 복용 시 주의사항 알려줘
-- 아세트아미노펜 부작용 알려줘
-- 이 약은 어떻게 보관해야 해?
-- 공복에 복용해도 되는지 알려줘
+- 감기약 먹으면 졸릴 수 있나요?
+- 3살 아이가 타이레놀 먹어도 될까요?
+- 배가 아픈데 어떤 약 먹어야 할까?
 
-⚠️ 본 시스템은 참고용 의료 정보만 제공합니다. 진단이나 처방은 반드시 의료 전문가와 상담하세요.
+⚠️ 본 시스템은 참고용 정보만 제공하며, 진단·처방을 대체하지 않습니다.
 """
-    ).send()
+
+
+def clean_markdown(text: str) -> str:
+    return "\n\n".join(line.strip() for line in text.splitlines() if line.strip())
+
+
+def short_sources(sources: list[dict], limit: int = 3) -> str:
+    if not sources:
+        return "### 참고 출처\n- 검색된 출처 없음"
+
+    lines = ["### 참고 출처"]
+
+    for i, src in enumerate(sources[:limit], start=1):
+        title = src.get("title", "제목 없음")
+        manufacturer = src.get("manufacturer", "")
+
+        if manufacturer:
+            lines.append(f"{i}. **{title}** / {manufacturer}")
+        else:
+            lines.append(f"{i}. **{title}**")
+
+    if len(sources) > limit:
+        lines.append(f"\n외 {len(sources) - limit}개 문서 참고")
+
+    return "\n".join(lines)
+
+def make_final_answer(answer: str, sources: list[dict], question_type: str) -> str:
+    type_label = {
+        "drug": "의약품 정보 검색",
+        "disease": "의료·건강 질의응답",
+        "general": "일반 문서 검색"
+    }.get(question_type, "문서 검색")
+
+    return (
+        f"**질문 유형:** {type_label}\n\n"
+        f"{clean_markdown(answer)}\n\n"
+        f"---\n\n"
+        f"{short_sources(sources)}\n\n"
+        f"---\n\n"
+        f"⚠️ 본 답변은 의료 문서 기반 참고 정보이며, 진단·처방을 대체하지 않습니다.\n"
+        f"정확한 판단은 의사 또는 약사와 상담하세요."
+    )
+
+
+async def stream_text(msg: cl.Message, text: str, delay: float = 0.01):
+    msg.content = ""
+
+    for char in text:
+        msg.content += char
+        await msg.update()
+        await asyncio.sleep(delay)
+
+
+@cl.on_chat_start
+async def on_chat_start():
+    cl.user_session.set("ask", load_rag())
+    await cl.Message(content=WELCOME_MESSAGE).send()
+
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    ask = cl.user_session.get("ask")
+    ask = cl.user_session.get("ask") or load_rag()
+    cl.user_session.set("ask", ask)
 
-    if ask is None:
-        ask = load_rag()
-        cl.user_session.set("ask", ask)
-
-    question = message.content
-
-    thinking_msg = cl.Message(content="문서를 검색하고 답변을 생성하는 중입니다...")
-    await thinking_msg.send()
+    msg = cl.Message(content="")
+    await msg.send()
 
     try:
-        answer, sources = ask(question)
+        await stream_text(msg, "문서를 검색하고 답변을 생성하는 중입니다...", delay=0.01)
 
-        source_text = "\n\n### 참고 출처\n"
+        answer, sources, question_type = ask(message.content)
+        final_answer = make_final_answer(answer, sources, question_type)
 
-        for idx, src in enumerate(sources, start=1):
-            source_text += f"{idx}. **{src['title']}**\n"
-            source_text += f"   - 출처: {src['source']}\n"
-            source_text += f"   - URL: {src['url']}\n"
-
-        final_answer = f"{answer}\n\n---\n{source_text}"
-
-        thinking_msg.content = final_answer
-        await thinking_msg.update()
+        await stream_text(msg, final_answer, delay=0.005)
 
     except Exception as e:
-        thinking_msg.content = f"오류가 발생했습니다.\n\n```text\n{str(e)}\n```"
-        await thinking_msg.update()
+        await stream_text(
+            msg,
+            f"오류가 발생했습니다.\n\n```text\n{e}\n```",
+            delay=0.005
+        )
