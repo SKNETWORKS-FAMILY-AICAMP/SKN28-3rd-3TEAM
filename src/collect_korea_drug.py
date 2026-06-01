@@ -70,10 +70,17 @@ def parse_items(xml_content):
             "source": "식품의약품안전처 의약품개요정보 API",
             "url": BASE_URL,
             "metadata": {
-                "manufacturer": entp_name,
-                "type": "drug"
-            }
-        })
+                    "manufacturer": entp_name,
+                    "type": "drug",
+                    "effect": efcy_qesitm,
+                    "symptom_text": efcy_qesitm,
+                    "usage_text": use_method_qesitm,
+                    "warning_text": atpn_qesitm,
+                    "interaction_text": intrc_qesitm,
+                    "side_effect_text": se_qesitm,
+                    "storage_text": deposit_method_qesitm
+                }
+            })
 
     return docs
 

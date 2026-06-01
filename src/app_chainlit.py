@@ -4,7 +4,7 @@ from rag_chain import load_rag
 
 
 WELCOME_MESSAGE = """
-# 💊 MediPick
+# 💊 MediPill
 
 의약품 문서 기반 RAG 질의응답 시스템입니다.
 
