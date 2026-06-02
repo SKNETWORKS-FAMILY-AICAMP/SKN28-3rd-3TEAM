@@ -1,4 +1,5 @@
 import asyncio
+import re
 import chainlit as cl
 from rag_chain import load_rag
 
@@ -18,8 +19,61 @@ WELCOME_MESSAGE = """
 """
 
 
+TYPE_LABELS = {
+    "drug": "의약품 정보 검색",
+    "symptom": "증상 기반 일반의약품 안내",
+    "disease": "의료·건강 질의응답",
+    "general": "일반 문서 검색",
+}
+
+
+def is_table_line(line: str) -> bool:
+    stripped = line.strip()
+    return stripped.startswith("|") and stripped.endswith("|")
+
+
+def fix_markdown_ranges(text: str) -> str:
+    text = text.replace("~~", "~")
+    text = re.sub(r"(\d+)\s*~\s*(\d+)", r"\1\\~\2", text)
+    return text
+
+
 def clean_markdown(text: str) -> str:
-    return "\n\n".join(line.strip() for line in text.splitlines() if line.strip())
+    text = fix_markdown_ranges(text)
+    text = text.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n")
+
+    raw_lines = [line.rstrip() for line in text.splitlines()]
+    lines = []
+
+    for line in raw_lines:
+        stripped = line.strip()
+
+        if not stripped:
+            if lines and lines[-1] != "":
+                lines.append("")
+            continue
+
+        if lines:
+            prev = lines[-1]
+
+            if is_table_line(prev) and is_table_line(stripped):
+                lines.append(stripped)
+                continue
+
+            if not is_table_line(prev) and is_table_line(stripped):
+                if prev != "":
+                    lines.append("")
+                lines.append(stripped)
+                continue
+
+            if is_table_line(prev) and not is_table_line(stripped):
+                lines.append("")
+                lines.append(stripped)
+                continue
+
+        lines.append(stripped)
+
+    return "\n".join(lines).strip()
 
 
 def short_sources(sources: list[dict], limit: int = 3) -> str:
@@ -31,27 +85,52 @@ def short_sources(sources: list[dict], limit: int = 3) -> str:
     for i, src in enumerate(sources[:limit], start=1):
         title = src.get("title", "제목 없음")
         manufacturer = src.get("manufacturer", "")
+        source = src.get("source", "")
+
+        detail = f"**{title}**"
 
         if manufacturer:
-            lines.append(f"{i}. **{title}** / {manufacturer}")
-        else:
-            lines.append(f"{i}. **{title}**")
+            detail += f" / {manufacturer}"
+
+        if source:
+            detail += f" / {source}"
+
+        lines.append(f"{i}. {detail}")
 
     if len(sources) > limit:
         lines.append(f"\n외 {len(sources) - limit}개 문서 참고")
 
     return "\n".join(lines)
 
+def is_no_answer(answer: str) -> bool:
+    no_answer_phrases = [
+        "제공된 문서에서 확인할 수 없습니다",
+        "문서에서 확인할 수 없습니다",
+        "확인할 수 없습니다",
+        "검색된 문서에서 확인할 수 없습니다",
+    ]
+
+    return any(
+        phrase in answer
+        for phrase in no_answer_phrases
+    )
+
 def make_final_answer(answer: str, sources: list[dict], question_type: str) -> str:
-    type_label = {
-        "drug": "의약품 정보 검색",
-        "disease": "의료·건강 질의응답",
-        "general": "일반 문서 검색"
-    }.get(question_type, "문서 검색")
+    type_label = TYPE_LABELS.get(question_type, "문서 검색")
+    answer = clean_markdown(answer)
+
+    if is_no_answer(answer):
+        return (
+            f"**질문 유형:** {type_label}\n\n"
+            f"{answer}\n\n"
+            f"---\n\n"
+            f"⚠️ 본 답변은 의료 문서 기반 참고 정보이며, 진단·처방을 대체하지 않습니다.\n"
+            f"정확한 판단은 의사 또는 약사와 상담하세요."
+        )
 
     return (
         f"**질문 유형:** {type_label}\n\n"
-        f"{clean_markdown(answer)}\n\n"
+        f"{answer}\n\n"
         f"---\n\n"
         f"{short_sources(sources)}\n\n"
         f"---\n\n"
@@ -84,16 +163,32 @@ async def on_message(message: cl.Message):
     await msg.send()
 
     try:
-        await stream_text(msg, "문서를 검색하고 답변을 생성하는 중입니다...", delay=0.01)
+        await stream_text(
+            msg,
+            "문서를 검색하고 답변을 생성하는 중입니다...",
+            delay=0.01,
+        )
 
-        answer, sources, question_type = ask(message.content)
-        final_answer = make_final_answer(answer, sources, question_type)
+        answer, sources, question_type = await asyncio.to_thread(
+            ask,
+            message.content,
+        )
 
-        await stream_text(msg, final_answer, delay=0.005)
+        final_answer = make_final_answer(
+            answer,
+            sources,
+            question_type,
+        )
+
+        await stream_text(
+            msg,
+            final_answer,
+            delay=0.005,
+        )
 
     except Exception as e:
         await stream_text(
             msg,
             f"오류가 발생했습니다.\n\n```text\n{e}\n```",
-            delay=0.005
+            delay=0.005,
         )

@@ -3,25 +3,43 @@
 import os
 import json
 from glob import glob
-from dotenv import load_dotenv
+from pathlib import Path
 
+from dotenv import load_dotenv
 from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 load_dotenv()
 
-os.makedirs("vectorstore", exist_ok=True)
 
-def load_all_json_docs():
+PROCESSED_DIR = "data/processed"
+VECTORSTORE_DIR = "vectorstore/faiss_index"
+
+
+def load_json_documents():
     docs = []
 
-    for path in glob("data/processed/*.json"):
-        with open(path, "r", encoding="utf-8") as f:
+    json_files = glob(f"{PROCESSED_DIR}/*.json")
+
+    print("읽을 JSON 파일 목록:")
+    for file_path in json_files:
+        print("-", file_path)
+
+    for file_path in json_files:
+        with open(file_path, "r", encoding="utf-8") as f:
             items = json.load(f)
 
+        if isinstance(items, dict):
+            items = [items]
+
         for item in items:
+            content = item.get("content", "")
+
+            if not content:
+                continue
+
             item_metadata = item.get("metadata", {})
 
             metadata = {
@@ -33,38 +51,49 @@ def load_all_json_docs():
 
             docs.append(
                 Document(
-                    page_content=item.get("content", ""),
+                    page_content=content,
                     metadata=metadata
                 )
             )
 
     return docs
 
-def build_vector_db():
-    documents = load_all_json_docs()
 
-    if not documents:
-        raise ValueError("data/processed 폴더에 문서가 없습니다. 먼저 collect_korea_drug.py를 실행하세요.")
+def build_vector_db():
+    documents = load_json_documents()
+
+    print(f"로드된 원본 문서 수: {len(documents)}")
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=120
+        chunk_size=2000,
+        chunk_overlap=100
     )
 
     split_docs = splitter.split_documents(documents)
+
+    print(f"청크 분리 후 문서 수: {len(split_docs)}")
 
     embeddings = OpenAIEmbeddings(
         model="text-embedding-3-small"
     )
 
     vectorstore = FAISS.from_documents(
-        documents=split_docs,
-        embedding=embeddings
+        split_docs,
+        embeddings
     )
 
-    vectorstore.save_local("vectorstore/faiss_index")
+    Path(VECTORSTORE_DIR).mkdir(
+        parents=True,
+        exist_ok=True
+    )
 
-    print(f"FAISS 저장 완료: {len(split_docs)}개 chunk")
+    vectorstore.save_local(VECTORSTORE_DIR)
+
+    print("=" * 60)
+    print("FAISS 벡터 DB 생성 완료")
+    print(f"저장 위치: {VECTORSTORE_DIR}")
+    print("=" * 60)
+
 
 if __name__ == "__main__":
     build_vector_db()
