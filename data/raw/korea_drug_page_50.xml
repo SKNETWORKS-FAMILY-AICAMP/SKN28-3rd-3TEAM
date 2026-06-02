@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>NORMAL SERVICE.</resultMsg>
+</header>
+<body>
+<numOfRows>100</numOfRows>
+<pageNo>50</pageNo>
+<totalCount>4810</totalCount>
+<items/>
+</body>
+</response>

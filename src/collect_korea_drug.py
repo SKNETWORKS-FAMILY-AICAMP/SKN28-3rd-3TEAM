@@ -93,7 +93,7 @@ def collect_page(page_no=1, num_of_rows=100):
         "type": "xml"
     }
 
-    response = requests.get(BASE_URL, params=params, timeout=20)
+    response = requests.get(BASE_URL, params=params, timeout=60)
 
     print(f"[페이지 {page_no}] 상태 코드:", response.status_code)
 
